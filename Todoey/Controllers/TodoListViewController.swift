@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
 
@@ -24,14 +25,32 @@ class TodoListViewController: SwipeTableViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
+                
         navigationItem.searchController = UISearchController()
         navigationItem.searchController?.searchBar.delegate = self
         navigationItem.hidesSearchBarWhenScrolling = false
         
         title = selectedCategory?.name
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        if let colorHex = selectedCategory?.color, let navBarColor = UIColor(hexString: colorHex) {
+            guard let navBar = navigationController?.navigationBar else { fatalError("Navigation Controller does not exist") }
+            
+            navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+            navBar.barTintColor = navBarColor
+            
+            // Customise Navigation Bar
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithDefaultBackground()
+            appearance.backgroundColor = UIColor(hexString: selectedCategory!.color)
+            appearance.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(navBarColor, returnFlat: true)]
+            appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(navBarColor, returnFlat: true)]
+
+            navigationItem.scrollEdgeAppearance = appearance
+            navigationItem.standardAppearance = appearance
+        }
     }
 
     //MARK: - TableView Datasource Methods
@@ -51,6 +70,12 @@ class TodoListViewController: SwipeTableViewController {
             content.text = item.title
             
             cell.accessoryType = item.done ? .checkmark : .none
+            
+            if let color =  UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(self.todoItems!.count)) {
+                cell.backgroundColor = color
+                content.textProperties.color = ContrastColorOf(color, returnFlat: true)
+            }
+        
         } else {
             // Configure content
             content.text = "No items added"

@@ -7,5 +7,6 @@ target 'Todoey' do
 
   pod 'RealmSwift'
   pod 'SwipeCellKit'
-
+  pod 'ChameleonFramework/Swift', :git => 'https://github.com/antonrom1/Chameleon.git'
+  
 end
